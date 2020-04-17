@@ -2,10 +2,8 @@ import re
 from stop_words import get_stop_words
 import csv
 from random import randrange
-
+import numpy as np
 from gensim.models import Word2Vec
-
-
 from keras.preprocessing import text, sequence
 from keras.utils import np_utils
 
@@ -46,7 +44,7 @@ with open('/home/rongon/workspace/assignment-1/dataset/IMDB Dataset.csv', 'r') a
     my_reader = csv.reader(file, delimiter=',')
 
     line_counter = 0
-    total_words = 0
+    word_count_per_line = []
     start = True
     negative_reviews = []
     positive_reviews = []
@@ -63,7 +61,7 @@ with open('/home/rongon/workspace/assignment-1/dataset/IMDB Dataset.csv', 'r') a
         cleaned_review_words = cleaned_review.split(' ')
         cleaned_review_words = ' '.join(cleaned_review_words).split()
 
-        total_words = total_words + len(cleaned_review_words)
+        word_count_per_line.append(len(cleaned_review_words))
 
         if sentiment == 'negative':
             negative_reviews.append(cleaned_review_words)
@@ -135,8 +133,7 @@ with open('/home/rongon/workspace/assignment-1/dataset/IMDB Dataset.csv', 'r') a
 
     print(len(training_x_dl))
 
-average_input_length_perline = total_words/line_counter
-maxlen = average_input_length_perline + 20
+maxlen = np.percentile(word_count_per_line, 95)
 maxlen = int(maxlen)
 
 with open('/home/rongon/workspace/assignment-1/dataset/movie_review.csv', 'r') as file:
@@ -201,6 +198,10 @@ word_vector = model.wv
 max_features = 100000
 embed_size = 300
 
+"""
+RUN 1: padding with average number of words per line
+RUN 2: padding with 95th percentile number of words words count list
+"""
 tok = text.Tokenizer(num_words=max_features,lower=True)
 tok.fit_on_texts(training_x_dl + testing_x_dl)
 X_train = tok.texts_to_sequences(training_x_dl)
@@ -213,7 +214,6 @@ training_y = np_utils.to_categorical(training_y_dl)
 testing_y = np_utils.to_categorical(testing_y_dl)
 
 
-import numpy as np
 word_index = tok.word_index
 num_words = min(max_features, len(word_index) + 1)
 embedding_matrix = np.zeros((num_words, embed_size))
@@ -275,10 +275,15 @@ print('Recall: %.3f' % recall)
 score = f1_score(testing_y_dl, estimated_y, average='weighted')
 print('F-Measure: %.3f' % score)
 
-
+#maxlen = average words per line
 Precision: 0.718
 Recall: 0.701
 F_Measure: 0.695
+
+#maxlen=95 percentile
+Precision: 0.715
+Recall: 0.701
+F_Measure: 0.696
 
 test_sample_1 = "This movie is was fantastic. I will go there again"
 test_sample_2 = " Highly_recommended."
