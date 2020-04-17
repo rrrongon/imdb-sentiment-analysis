@@ -206,6 +206,14 @@ print('Recall 10 iter: %.3f' % recall)
 score = f1_score(testing_y, y_10, average='binary')
 print('F-Measure 10 iter: %.3f' % score)
 
+'''
+BEST output for iteration 100
+
+Precision 100 iter: 0.877
+Recall 100 iter: 0.880
+F-Measure 100 iter: 0.878
+
+'''
 
 test_sample_1 = "This movie is was fantastic. I will go there again"
 test_sample_2 = " Highly_recommended."
